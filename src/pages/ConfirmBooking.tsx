@@ -14,10 +14,24 @@ interface LocationState {
   price: number;
 }
 
+
 const ConfirmBooking = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
   const booking = state as LocationState;
+  
+  const handleSubmit = (e) => {
+      // navigate("/payment/success")
+
+       navigate("/payment/success", {
+      state: {
+        movie,
+        seats,
+        formattedDate, 
+        time,
+      },
+    });
+  }
 
   // 10 minutes -> 600 seconds
   const [timeLeft, setTimeLeft] = useState(600);
@@ -275,7 +289,8 @@ const ConfirmBooking = () => {
               <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white">
                 Payment Information
               </h3>
-              <form className="space-y-4">
+              <div 
+              className="space-y-4">
                 <div className="relative">
                   <label
                     className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
@@ -335,15 +350,19 @@ const ConfirmBooking = () => {
                   </label>
                 </div>
                 <button
+                              
+              onClick={(e) => {
+                handleSubmit(e)
+                // navigate("/payment/success");
+              }} 
                   className="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#ec1337] text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-[#ec1337]/90"
-                  type="submit"
                 >
                   <span className="truncate">Confirm &amp; Pay $34.25</span>
                 </button>
                 <p className="text-xs text-center text-gray-500 dark:text-gray-400">
                   Secure payment powered by Stripe.
                 </p>
-              </form>
+              </div>
             </div>
           </div>
         </div>

@@ -7,6 +7,7 @@ import Footer from './components/Footer'
 import { ToastContainer } from 'react-toastify'
 import Movie from './pages/Movie'
 import Booked from './pages/Booked'
+import NotFound from './pages/NotFound'
 
 const App = () => {
   return (
@@ -20,6 +21,8 @@ const App = () => {
         <Route path='/confirm-booking' element={<ConfirmBooking/>}/>
         <Route path='/payment/success' element={<Booked/>}/>
         <Route path='/movies/:id' element={<Movie/>}/>
+        <Route path='*' element={<NotFound/>}/>
+
       </Routes>
       <Footer/>
       
