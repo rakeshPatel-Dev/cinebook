@@ -1,11 +1,19 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import movies from "../data/movies.json";
 import { CirclePlay, Film, Star, X } from "lucide-react";
 import { useState } from "react";
+import {  ToastContainer } from "react-toastify";
 
-const BookMovie = () => {
+const Movie = () => {
   const { id } = useParams();
   const movie = movies.find((m) => m.id === id);
+  const [showTrailer, setShowTrailer] = useState(false);
+
+  const navigate = useNavigate();
+  const handleBooking = () => {
+    navigate("/booking", { state: { movie } });
+
+  }
 
   if (!movie) {
     return (
@@ -15,12 +23,9 @@ const BookMovie = () => {
     );
   }
 
-  const [showTrailer, setShowTrailer] = useState(false);
-
-
-
   return (
     <div className="dark:bg-[#121212] min-h-screen">
+      <ToastContainer position={"top-center"} />
       {/* Banner Section */}
       <div className="relative h-[50vh] lg:h-[65vh] w-full">
         <div
@@ -61,7 +66,11 @@ const BookMovie = () => {
               </div>
             </div>
 
-            <button className="h-12 px-6 bg-[#ec1337] hover:bg-[#c60f2d] rounded-lg font-bold flex cursor-pointer transition-all items-center gap-2 text-white">
+            <button
+              onClick={() => {
+                handleBooking()
+              }}
+              className="h-12 px-6 bg-[#ec1337] hover:bg-[#c60f2d] rounded-lg font-bold flex cursor-pointer transition-all items-center gap-2 text-white">
               <Film /> Book Tickets
             </button>
             <button
@@ -145,12 +154,12 @@ const BookMovie = () => {
             </div>
           </div>
           <div className="bg-white/5 rounded-lg p-6 mt-6">
-              <h3 className="text-xl font-bold text-white mb-4">Ratings</h3>
-              <div className="flex items-center flex-row gap-4">
-                <Star size={35} className="text-yellow-500"/>
-                <span className="text-white font-extrabold text-2xl">{movie.rating}</span>
-              </div>
+            <h3 className="text-xl font-bold text-white mb-4">Ratings</h3>
+            <div className="flex items-center flex-row gap-4">
+              <Star size={35} className="text-yellow-500" />
+              <span className="text-white font-extrabold text-2xl">{movie.rating}</span>
             </div>
+          </div>
         </div>
       </div>
 
@@ -158,4 +167,4 @@ const BookMovie = () => {
   );
 };
 
-export default BookMovie;
+export default Movie;

@@ -1,19 +1,27 @@
 import { Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
-// import MoviePage from './pages/MoviePage'
 import Header from './components/Header'
-import BookMovie from './pages/BookMovie'
+import Booking from './pages/Booking'
+import ConfirmBooking from './pages/ConfirmBooking'
+import Footer from './components/Footer'
+import { ToastContainer } from 'react-toastify'
+import Movie from './pages/Movie'
+import Booked from './pages/Booked'
 
 const App = () => {
   return (
     <div>
-
+      <ToastContainer/>
 
       <Header/>
       <Routes>
         <Route path='/' element={<Home/>}/>
-        <Route path='/movies/:id' element={<BookMovie/>}/>
+        <Route path='/booking' element={<Booking/>}/>
+        <Route path='/confirm-booking' element={<ConfirmBooking/>}/>
+        <Route path='/payment/success' element={<Booked/>}/>
+        <Route path='/movies/:id' element={<Movie/>}/>
       </Routes>
+      <Footer/>
       
     </div>
   )
