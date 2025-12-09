@@ -1,2 +1,8 @@
 @import "tailwindcss";
 
+/* Add this in your global CSS or inside a <style> tag */
+.ticket-container,
+.ticket-container * {
+  color: inherit !important;
+  background-color: inherit !important;
+}

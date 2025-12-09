@@ -43,7 +43,7 @@ const MoviePage = () => {
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col bg-[#f8f6f6] dark:bg-[#121212] group/design-root overflow-x-hidden">
         <ToastContainer/>
-      <main className="flex flex-col gap-8 py-8 px-4 sm:px-6">
+      <main className="flex flex-col gap-8 py-8 px-4 sm:px-20 lg:px-40">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <p className="text-white text-4xl font-black leading-tight tracking-[-0.033em] min-w-72">
             Now Showing

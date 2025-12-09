@@ -1,5 +1,7 @@
-import { BadgeCheck, CalendarCheck, CalendarClock, MapPinHouse, Sofa, TicketCheck } from 'lucide-react';
+import { CalendarCheck, CalendarClock, MapPinHouse, Sofa, TicketCheck } from 'lucide-react';
 import { useLocation, useNavigate } from "react-router-dom";
+import { LottieAmination } from '../components/ui/dotLottie';
+import { toast, ToastContainer } from 'react-toastify';
 
 interface LocationState {
   movie: {
@@ -35,10 +37,12 @@ const Booked = () => {
   return (
     <div className='dark:bg-[#121212] min-h-screen'>
       <main className="flex flex-col max-w-4xl mx-auto w-full flex-1 justify-center px-4 sm:px-6 lg:px-8 py-4">
+        <ToastContainer position='top-center'/>
         <div className="mb-8 flex flex-col items-center gap-4 text-center">
-          <div className="flex p-2 items-center justify-center rounded-full bg-[#10b981]/10 text-[#10b981]">
+          {/* <div className="flex p-2 items-center justify-center rounded-full bg-[#10b981]/10 text-[#10b981]">
             <BadgeCheck size={80} />
-          </div>
+          </div> */}
+          <LottieAmination/>
           <div className="flex flex-col gap-2">
             <p className="text-3xl font-black leading-tight tracking-[-0.033em] text-gray-900 dark:text-white md:text-4xl">
               Booking Confirmed!
@@ -53,7 +57,7 @@ const Booked = () => {
           <div className="flex flex-col items-start gap-6 sm:flex-row">
             <div className="w-full sm:w-1/4">
               <div
-                className="aspect-[2/3] w-full rounded-lg bg-cover bg-center bg-no-repeat"
+                className="aspect-2/3 w-full rounded-lg bg-cover bg-center bg-no-repeat"
                 style={{ backgroundImage: `url(${movie.poster || 'https://via.placeholder.com/300x450'})` }}
               />
             </div>
@@ -109,8 +113,8 @@ const Booked = () => {
 
         <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <button
-            className="flex gap-2 items-center w-full sm:w-auto cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#ec1337] text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-[#ec1337]/90"
-            onClick={() => alert("E-Tickets page coming soon!")}
+            className="flex gap-2 w-full sm:w-auto cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#ec1337] text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-[#ec1337]/90"
+            onClick={() => toast("E-Tickets page coming soon!",{theme:'dark',closeOnClick:true})}
           >
             <TicketCheck/>
             <span className="truncate">View E-Tickets</span>
