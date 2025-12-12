@@ -1,146 +1,162 @@
-import React from 'react'
+import { useNavigate } from "react-router-dom";
+import { Clapperboard } from "lucide-react";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db, auth } from "../firebase/firebase.config";
+import { useEffect, useState } from "react";
+
+export interface Movie {
+  id: string;
+  title: string;
+  director?: string;
+  poster?: string;
+  genres?: string[];
+  banner?: string;
+}
+
+export interface Ticket {
+  id: string;
+  movie: Movie;
+  seats: string[];
+  formattedDate: string;
+  time: string;
+  userId: string;
+}
 
 const MyBookings = () => {
+  const navigate = useNavigate();
+  const [ticketData, setTicketData] = useState<Ticket[]>([]);
+
+  const fetchTickets = async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      setTicketData([]);
+      return;
+    }
+
+    const q = query(collection(db, "Tickets"), where("userId", "==", user.uid));
+    const snap = await getDocs(q);
+    const data = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Ticket[];
+
+    setTicketData(data);
+  };
+
+  useEffect(() => {
+    fetchTickets();
+  }, []);
+
   return (
-    <div className='dark:bg-[#121212]'>
-      <div className="relative max-w-6xl mx-auto flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+    <div className="dark:bg-[#121212]">
+      <div className="relative max-w-6xl mx-auto flex min-h-screen w-full flex-col">
         <main className="flex-1">
           <div className="flex flex-wrap justify-between gap-3 p-4">
-            <h1 className="text-white text-4xl font-black leading-tight tracking-[-0.033em] min-w-72">
+            <h1 className="text-white text-4xl font-black tracking-[-0.033em]">
               My Bookings
             </h1>
           </div>
+
+          {/* TABS */}
           <div className="pb-3">
-            <div className="flex border-b border-white/10 dark:border-[#543b3f] px-4 gap-8">
-              <a
-                className="flex flex-col items-center justify-center border-b-[3px] border-b-[#ec1337] text-white pb-[13px] pt-4"
-                href="#"
-              >
-                <p className="text-white text-sm font-bold leading-normal tracking-[0.015em]">
-                  Upcoming
-                </p>
+            <div className="flex border-b border-white/10 px-4 gap-8">
+              <a className="flex flex-col items-center justify-center border-b-[3px] border-b-[#ec1337] text-white pb-[13px] pt-4">
+                <p className="text-sm font-bold">Upcoming</p>
               </a>
-              <a
-                className="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-[#b99da1] hover:text-white/90 pb-[13px] pt-4"
-                href="#"
-              >
-                <p className="text-sm font-bold leading-normal tracking-[0.015em]">
-                  Past
-                </p>
+              <a className="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-[#b99da1] pb-[13px] pt-4 hover:text-white/90">
+                <p className="text-sm font-bold">Past</p>
               </a>
             </div>
           </div>
+
+          {/* BOOKINGS LIST */}
           <div className="flex flex-col gap-6 py-6">
-            {/* Booking Card 1 */}
-            <div className="px-4">
-              <div className="flex flex-col sm:flex-row items-stretch justify-between gap-6 rounded-lg bg-white/5 dark:bg-[#271c1d] p-4 shadow-lg">
+            {ticketData.map((ticket, idx) => (
+              <div key={idx} className="px-4">
                 <div
-                  className="w-full sm:w-32 md:w-40 bg-center bg-no-repeat aspect-[2/3] bg-cover rounded-lg flex-shrink-0"
-                  data-alt="Movie poster for Dune: Part Two"
+                  className="relative flex flex-col sm:flex-row items-stretch gap-6 rounded-lg p-4 shadow-lg overflow-hidden"
                   style={{
-                    backgroundImage:
-                      'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDG3k5uURb5hpCMXpGfDMUKs3ib8NZXSY8gKWn8VrwngF6GiTg5iy8p6gMISOc41049X727j9goX5mr8iGtH_X8m0c2D1VcpJ_LFzNFgp9hkQ2oSLwBsZByCro0QjI4JBB3XBmQinIoALjtqHj2YjxGWNSRaVGWim1WnA4N1q42p1yck2hlyG1qVpVoFLiBjGFqgcVQsjq81m6IZ5cvj2kum4IIY6To_s0NM8FKiJM1XzXZFhdhrvQ2w1SexYpODJ3lTAVwQlA5UdU")'
+                    backgroundImage: `url(${
+                      ticket.movie.banner || "https://via.placeholder.com/600x300"
+                    })`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
                   }}
-                />
-                <div className="flex flex-1 flex-col gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-3">
-                      <p className="text-white text-xl font-bold leading-tight">
-                        Dune: Part Two
+                >
+                  {/* Banner Overlay */}
+                  <div className="absolute inset-0 bg-black/70"></div>
+
+                  {/* Poster */}
+                  <div
+                    className="relative z-10 w-full sm:w-32 md:w-40 aspect-2/3 bg-cover rounded-lg"
+                    style={{
+                      backgroundImage: `url(${
+                        ticket.movie.poster ||
+                        "https://via.placeholder.com/300x450"
+                      })`,
+                    }}
+                  />
+
+                  {/* Text Content */}
+                  <div className="relative z-10 flex flex-1 flex-col gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-3">
+                        <p className="text-white text-xl font-bold">
+                          {ticket.movie.title}
+                        </p>
+                        <span className="text-xs font-bold text-green-300 bg-green-500/20 px-2.5 py-1 rounded-full">
+                          Confirmed
+                        </span>
+                      </div>
+
+                      <p className="text-[#b99da1] text-sm">
+                        {ticket.formattedDate} @ {ticket.time}
                       </p>
-                      <span className="text-xs font-bold text-green-300 bg-green-500/20 px-2.5 py-1 rounded-full">
-                        Confirmed
-                      </span>
-                    </div>
-                    <p className="text-[#b99da1] text-sm font-normal leading-normal">
-                      FRI, NOV 3, 2024 @ 7:30 PM
-                    </p>
-                    <p className="text-white/90 text-sm font-normal leading-normal">
-                      AMC Metreon 16, IMAX
-                    </p>
-                    <p className="text-[#b99da1] text-sm font-normal leading-normal pt-1">
-                      Seats: F12, F13
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3 mt-auto">
-                    <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-5 bg-[#ec1337] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#ec1337]/90 transition-colors">
-                      <span className="truncate">View E-Ticket</span>
-                    </button>
-                    <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-5 bg-transparent border border-white/20 text-white/80 hover:bg-white/10 text-sm font-medium leading-normal transition-colors">
-                      <span className="truncate">Cancel Booking</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* Booking Card 2 */}
-            <div className="px-4">
-              <div className="flex flex-col sm:flex-row items-stretch justify-between gap-6 rounded-lg bg-white/5 dark:bg-[#271c1d] p-4 shadow-lg">
-                <div
-                  className="w-full sm:w-32 md:w-40 bg-center bg-no-repeat aspect-[2/3] bg-cover rounded-lg flex-shrink-0"
-                  data-alt="Movie poster for Oppenheimer"
-                  style={{
-                    backgroundImage:
-                      'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDWrxkcTDuGaY6dknpMyLvEruqkvyt-0AMzTlz9fkUBQyLzmaTExRvlulc9ZfazN-K0YC6Ttr3Qg_uFW-4Xp6RG_4_NEKRt0ZCSG4gCZXOxTuKrbG98Fz6KIVoMnE8LlSwyAACvaIofSjodWBsgNJ7wKGp6TU6P_EZHNkpZmfhT7Tj7c9UI1uF1Dy0UDSQp1YysGyDba92bu8nMAwzQyvfMwxGbQXBafkXWbYoZwtdSGqo2EM_wcUiue5xEPiJnYc2PhgMuEysxink")'
-                  }}
-                />
-                <div className="flex flex-1 flex-col gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-3">
-                      <p className="text-white text-xl font-bold leading-tight">
-                        Oppenheimer
+
+                      <p className="text-white/90 text-sm">AMC Metreon 16, IMAX</p>
+
+                      <p className="text-[#b99da1] text-sm">
+                        Seats: {ticket.seats.join(", ")}
                       </p>
-                      <span className="text-xs font-bold text-green-300 bg-green-500/20 px-2.5 py-1 rounded-full">
-                        Confirmed
-                      </span>
                     </div>
-                    <p className="text-[#b99da1] text-sm font-normal leading-normal">
-                      SAT, NOV 18, 2024 @ 9:00 PM
-                    </p>
-                    <p className="text-white/90 text-sm font-normal leading-normal">
-                      Cinemark Century 20, Dolby Cinema
-                    </p>
-                    <p className="text-[#b99da1] text-sm font-normal leading-normal pt-1">
-                      Seats: G8, G9, G10
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3 mt-auto">
-                    <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-5 bg-[#ec1337] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#ec1337]/90 transition-colors">
-                      <span className="truncate">View E-Ticket</span>
-                    </button>
-                    <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-5 bg-transparent border border-white/20 text-white/80 hover:bg-white/10 text-sm font-medium leading-normal transition-colors">
-                      <span className="truncate">Cancel Booking</span>
-                    </button>
+
+                    <div className="flex flex-wrap items-center gap-3 mt-auto">
+                      <button className="h-10 px-5 rounded-lg bg-[#ec1337] text-white font-bold hover:bg-[#ec1337]/90">
+                        View E-Ticket
+                      </button>
+                      <button className="h-10 px-5 rounded-lg border border-white/20 text-white/80 hover:bg-white/10">
+                        Cancel Booking
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            {/* Empty State Example */}
-            <div className="px-4 pt-10">
-              <div className="flex flex-col items-center justify-center gap-6 rounded-lg border-2 border-dashed border-white/10 dark:border-[#39282b] p-12 text-center">
-                <span className="material-symbols-outlined text-5xl text-[#b99da1]">
-                  movie
-                </span>
-                <div className="flex flex-col gap-2">
-                  <p className="text-white text-lg font-bold leading-tight">
-                    No past bookings yet
-                  </p>
-                  <p className="text-[#b99da1] text-sm font-normal leading-normal max-w-sm">
-                    Looks like your movie history is empty. Book a ticket to
-                    start your collection!
-                  </p>
+            ))}
+
+            {/* EMPTY STATE */}
+            {ticketData.length === 0 && (
+              <div className="px-4 pt-10">
+                <div className="flex flex-col items-center justify-center gap-6 rounded-lg border-2 border-dashed border-white/10 p-12 text-center">
+                  <Clapperboard size={60} className="text-[#ec1337]" />
+                  <div>
+                    <p className="text-white text-lg font-bold">
+                      No bookings yet
+                    </p>
+                    <p className="text-[#b99da1] text-sm">
+                      Start your movie journey by booking your first ticket!
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => navigate("/")}
+                    className="h-10 px-5 rounded-lg bg-[#ec1337]/20 text-[#ec1337] font-bold hover:bg-[#ec1337]/30"
+                  >
+                    Browse Movies
+                  </button>
                 </div>
-                <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-5 bg-[#ec1337]/20 text-[#ec1337] text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#ec1337]/30 transition-colors">
-                  <span className="truncate">Browse Movies</span>
-                </button>
               </div>
-            </div>
+            )}
           </div>
         </main>
       </div>
     </div>
+  );
+};
 
-  )
-}
-
-export default MyBookings
+export default MyBookings;

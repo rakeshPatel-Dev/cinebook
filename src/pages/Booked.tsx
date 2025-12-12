@@ -29,6 +29,18 @@ const Booked = () => {
     );
   }
 
+  const handleMyBookings = () => {
+    navigate("/my-bookings",{
+      state: {
+        movie,
+        seats,
+        formattedDate,
+        time,
+      }
+    })
+
+  }
+
   const { movie, seats, formattedDate, time } = data;
 
   // Generate random confirmation number
@@ -121,7 +133,7 @@ const Booked = () => {
           </button>
           <button
             className="flex w-full sm:w-auto min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-gray-200/80 dark:bg-white/10 text-gray-900 dark:text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-gray-300/80 dark:hover:bg-white/20"
-            onClick={() => navigate("/my-bookings")}
+            onClick={() => handleMyBookings()}
           >
             <span className="truncate">Go to My Bookings</span>
           </button>

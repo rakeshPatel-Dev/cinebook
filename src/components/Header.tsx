@@ -14,6 +14,7 @@ const Header = () => {
   useEffect(() => {
     const unsub = observeUser((currentUser) => {
       setUser(currentUser);
+      
     });
 
     return () => unsub();

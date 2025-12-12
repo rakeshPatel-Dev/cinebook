@@ -1,6 +1,8 @@
 import { AlarmClock, Armchair, BadgeIndianRupee, Calendar, CalendarClock, CreditCard } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { storeTicket } from "../firebase/storeTicket";
+import { auth } from "../firebase/firebase.config";
 
 interface LocationState {
   movie: {
@@ -9,6 +11,7 @@ interface LocationState {
     director: string;
     poster: string;
     genres: string[];
+    banner: string;
   };
   seats: string[];
   price: number;
@@ -16,21 +19,40 @@ interface LocationState {
 
 
 const ConfirmBooking = () => {
+
+  const [savingAllowed, setSavingAllowed] = useState(true)
+
   const navigate = useNavigate();
   const { state } = useLocation();
   const booking = state as LocationState;
-  
-  const handleSubmit = (e) => {
-      // navigate("/payment/success")
 
-       navigate("/payment/success", {
+  const handleSubmit = () => {
+    navigate("/payment/success", {
       state: {
         movie,
         seats,
-        formattedDate, 
+        formattedDate,
         time,
       },
     });
+
+    if (savingAllowed) {
+      storeTicket({
+        id : `${movie.id}-${new Date().getTime()}`,
+        movie : {
+          id : movie.id,
+          title: movie.title,
+          director : movie.director,
+          poster : movie.poster,
+          genres : movie.genres,
+          banner : movie.banner
+        },
+        seats,
+        formattedDate,
+        time,
+        userId : auth.currentUser?.uid 
+      })
+    }
   }
 
   // 10 minutes -> 600 seconds
@@ -74,6 +96,14 @@ const ConfirmBooking = () => {
   const vatAmount = Math.floor(amountBeforeVat * 0.13);
   const actualPrice = price + vatAmount;
 
+  const futureDate = new Date();
+  futureDate.setDate(futureDate.getDate() + 10);
+
+  const day = futureDate.getDate();
+  const month = futureDate.getMonth() + 1; // Add 1 because months are 0-indexed
+  const year = futureDate.getFullYear();
+
+  const expiryDate = `${day}/${month}/${year}`;
 
 
   const formatter = new Intl.DateTimeFormat('en-US', {
@@ -122,7 +152,7 @@ const ConfirmBooking = () => {
               <div className="flex flex-col sm:flex-row items-start gap-6">
                 <div className="w-full sm:w-1/3">
                   <div
-                    className="aspect-[2/3] w-full rounded-lg bg-cover bg-center"
+                    className="aspect-2/3 w-full rounded-lg bg-cover bg-center"
                     style={{
                       backgroundImage: `url("${movie.poster}")`,
                     }}
@@ -279,18 +309,15 @@ const ConfirmBooking = () => {
                 <p className="text-gray-900 dark:text-white">Total</p>
                 <p className="text-gray-900 dark:text-white">Rs {actualPrice}</p>
               </div>
-
-              {/* <button className="mt-6 w-full h-12 bg-[#ec1337] hover:bg-[#d80f30] text-white rounded-lg font-bold">
-                Proceed to Payment
-              </button> */}
             </div>
             {/* Payment Information */}
             <div className="rounded-xl border border-gray-200/50 dark:border-white/10 bg-white dark:bg-[#121212]/50 p-6">
-              <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white">
+              <h3 className=" mb-4 text-lg font-bold text-gray-900 dark:text-white">
                 Payment Information
               </h3>
-              <div 
-              className="space-y-4">
+
+              <div
+                className="space-y-4">
                 <div className="relative">
                   <label
                     className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
@@ -299,10 +326,12 @@ const ConfirmBooking = () => {
                     Card Number
                   </label>
                   <input
-                    className="w-full rounded-lg border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 p-3 text-sm focus:border-[#ec1337] focus:ring-[#ec1337]"
+                    value={`1234 5678 9012 3456`}
+                    className="w-full rounded-lg border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 p-3 text-sm dark:text-white text-black focus:border-[#ec1337] focus:ring-[#ec1337]"
                     id="card-number"
-                    placeholder="•••• •••• •••• ••••"
+                    // placeholder="•••• •••• •••• ••••"
                     type="text"
+                    readOnly
                   />
                   <CreditCard className=" absolute right-3 top-9 text-gray-400" />
                 </div>
@@ -315,10 +344,12 @@ const ConfirmBooking = () => {
                       Expiry Date
                     </label>
                     <input
-                      className="w-full rounded-lg border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 p-3 text-sm focus:border-[#ec1337] focus:ring-[#ec1337]"
+                      value={expiryDate}
+                      className="w-full rounded-lg dark:text-white text-black border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 p-3 text-sm focus:border-[#ec1337] focus:ring-[#ec1337]"
                       id="expiry-date"
                       placeholder="MM / YY"
                       type="text"
+                      readOnly
                     />
                   </div>
                   <div>
@@ -329,15 +360,26 @@ const ConfirmBooking = () => {
                       CVV
                     </label>
                     <input
-                      className="w-full rounded-lg border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 p-3 text-sm focus:border-[#ec1337] focus:ring-[#ec1337]"
+                      value="3269"
+                      className="w-full rounded-lg dark:text-white text-black border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/10 p-3 text-sm focus:border-[#ec1337] focus:ring-[#ec1337]"
                       id="cvv"
                       placeholder="•••"
                       type="text"
+                      readOnly
                     />
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <input
+                    checked={savingAllowed}
+                    onChange={() => {
+
+                      if (savingAllowed) {
+                        setSavingAllowed(false)
+                      } else {
+                        setSavingAllowed(true)
+                      }
+                    }}
                     className="h-4 w-4 rounded border-gray-300 text-[#ec1337] focus:ring-[#ec1337] dark:bg-white/10 dark:border-white/20"
                     id="save-card"
                     type="checkbox"
@@ -346,21 +388,20 @@ const ConfirmBooking = () => {
                     className="text-sm text-gray-600 dark:text-gray-400"
                     htmlFor="save-card"
                   >
-                    Save card for future use
+                    Save ticket to My bookings. (Recommend)
                   </label>
                 </div>
                 <button
-                              
-              onClick={(e) => {
-                handleSubmit(e)
-                // navigate("/payment/success");
-              }} 
+
+                  onClick={() => {
+                    handleSubmit()
+                  }}
                   className="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#ec1337] text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-[#ec1337]/90"
                 >
                   <span className="truncate">Confirm &amp; Pay $34.25</span>
                 </button>
                 <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-                  Secure payment powered by Stripe.
+                  The payment is simulated. You can proceed.
                 </p>
               </div>
             </div>
